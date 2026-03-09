@@ -1,0 +1,9 @@
+[ui]
+hideSidebarNav = false
+
+[theme]
+base = "light"
+backgroundColor = "#F5F0E8"
+secondaryBackgroundColor = "#EDE8DC"
+textColor = "#1a1a1a"
+font = "monospace"
