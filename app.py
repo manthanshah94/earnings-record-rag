@@ -13,7 +13,7 @@ st.set_page_config(
 st.markdown("""
 <style>
     [data-testid="stSidebarCollapsedControl"] { display: none !important; }
-    [data-testid="stSidebar"] { min-width: 260px !important; width: 260px !important; }
+    [data-testid="stSidebar"] { display: none !important; }
 </style>
 """, unsafe_allow_html=True)
 st.markdown("""
@@ -251,168 +251,130 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# ── SIDEBAR ────────────────────────────────────────────────────────────────────
-with st.sidebar:
-    # Pull live stats from the corpus
-    from rag.retriever import retrieve
-    from rag.embedder import get_chroma_client, get_or_create_collection
+# ── TOP BAR ────────────────────────────────────────────────────────────────────
+from rag.embedder import get_chroma_client, get_or_create_collection
 
-    client_db = get_chroma_client()
-    col_db = get_or_create_collection(client_db)
-    total_chunks = col_db.count()
+client_db = get_chroma_client()
+col_db = get_or_create_collection(client_db)
+total_chunks = col_db.count()
 
-    companies = {
-        "NVDA": "Jensen Huang",
-        "AAPL": "Tim Cook",
-        "MSFT": "Satya Nadella",
-        "AMZN": "Andy Jassy",
-        "META": "Mark Zuckerberg"
-    }
+companies = {
+    "NVDA": "Jensen Huang",
+    "AAPL": "Tim Cook",
+    "MSFT": "Satya Nadella",
+    "AMZN": "Andy Jassy",
+    "META": "Mark Zuckerberg"
+}
 
-    st.markdown(f"""
-    <style>
-    .sidebar-masthead {{
-        border-top: 3px double var(--ink);
-        border-bottom: 1px solid #ccc8bc;
-        text-align: center;
-        padding: 0.8rem 0 0.6rem;
-        margin-bottom: 1rem;
-    }}
-    .sidebar-title {{
-        font-family: 'Playfair Display', serif;
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: var(--ink);
-        letter-spacing: 0.02em;
-    }}
-    .sidebar-edition {{
-        font-family: 'IBM Plex Mono', monospace;
-        font-size: 0.55rem;
-        letter-spacing: 0.15em;
-        text-transform: uppercase;
-        color: var(--ghost);
-        margin-top: 0.2rem;
-    }}
-    .stat-row {{
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        padding: 0.35rem 0;
-        border-bottom: 1px dotted #ccc8bc;
-        font-family: 'IBM Plex Mono', monospace;
-    }}
-    .stat-label {{
-        font-size: 0.65rem;
-        color: var(--ghost);
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-    }}
-    .stat-value {{
-        font-size: 0.85rem;
-        font-weight: 500;
-        color: var(--ink);
-    }}
-    .stat-accent {{
-        color: var(--accent);
-    }}
-    .correspondent-block {{
-        margin-top: 1rem;
-        border-top: 2px solid var(--ink);
-        padding-top: 0.6rem;
-    }}
-    .correspondent-head {{
-        font-family: 'IBM Plex Mono', monospace;
-        font-size: 0.55rem;
-        letter-spacing: 0.2em;
-        text-transform: uppercase;
-        color: var(--ghost);
-        margin-bottom: 0.5rem;
-    }}
-    .correspondent-row {{
-        display: flex;
-        justify-content: space-between;
-        padding: 0.25rem 0;
-        font-family: 'IBM Plex Mono', monospace;
-        font-size: 0.68rem;
-        border-bottom: 1px dotted #ccc8bc;
-    }}
-    .correspondent-ticker {{
-        font-weight: 500;
-        color: var(--ink);
-    }}
-    .correspondent-name {{
-        color: var(--ghost);
-        font-style: italic;
-        font-size: 0.62rem;
-    }}
-    .retrieval-block {{
-        margin-top: 1rem;
-        border-top: 2px solid var(--ink);
-        padding-top: 0.6rem;
-    }}
-    </style>
+st.markdown("""
+<style>
+.topbar {
+    background: var(--cream);
+    border-top: 2px solid var(--ink);
+    border-bottom: 2px solid var(--ink);
+    padding: 0.6rem 0;
+    margin-bottom: 1rem;
+}
+.topbar-grid {
+    display: flex;
+    gap: 0;
+    align-items: stretch;
+}
+.topbar-section {
+    flex: 1;
+    padding: 0 1.2rem;
+    border-right: 1px solid #ccc8bc;
+}
+.topbar-section:last-child { border-right: none; }
+.topbar-head {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.52rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ghost);
+    margin-bottom: 0.4rem;
+    border-bottom: 1px solid #ccc8bc;
+    padding-bottom: 0.25rem;
+}
+.topbar-stats {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+.topbar-stat { display: flex; flex-direction: column; }
+.topbar-stat-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.52rem;
+    color: var(--ghost);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+.topbar-stat-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--ink);
+}
+.topbar-stat-value.accent { color: var(--accent); }
+.topbar-correspondents {
+    display: flex;
+    gap: 1.2rem;
+    flex-wrap: wrap;
+}
+.topbar-co {
+    display: flex;
+    flex-direction: column;
+}
+.topbar-co-ticker {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--ink);
+}
+.topbar-co-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.58rem;
+    color: var(--ghost);
+    font-style: italic;
+}
+</style>
+""", unsafe_allow_html=True)
 
-    <div class="sidebar-masthead">
-        <div class="sidebar-title">Desk Notes</div>
-        <div class="sidebar-edition">Editor's briefing sheet</div>
+correspondents_html = "".join([
+    f'<div class="topbar-co"><span class="topbar-co-ticker">{t}</span><span class="topbar-co-name">{ceo}</span></div>'
+    for t, ceo in companies.items()
+])
+
+st.markdown(f"""
+<div class="topbar">
+  <div class="topbar-grid">
+    <div class="topbar-section">
+      <div class="topbar-head">Corpus at a glance</div>
+      <div class="topbar-stats">
+        <div class="topbar-stat"><span class="topbar-stat-label">Transcripts</span><span class="topbar-stat-value accent">5</span></div>
+        <div class="topbar-stat"><span class="topbar-stat-label">Chunks</span><span class="topbar-stat-value">{total_chunks}</span></div>
+        <div class="topbar-stat"><span class="topbar-stat-label">Strategy</span><span class="topbar-stat-value">Speaker</span></div>
+        <div class="topbar-stat"><span class="topbar-stat-label">Embeddings</span><span class="topbar-stat-value">MiniLM-L6</span></div>
+        <div class="topbar-stat"><span class="topbar-stat-label">Generator</span><span class="topbar-stat-value">Claude Haiku</span></div>
+        <div class="topbar-stat"><span class="topbar-stat-label">Coverage</span><span class="topbar-stat-value">Q4 2024</span></div>
+      </div>
     </div>
-    """, unsafe_allow_html=True)
+    <div class="topbar-section">
+      <div class="topbar-head">Our correspondents</div>
+      <div class="topbar-correspondents">{correspondents_html}</div>
+    </div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
 
-    # Live corpus stats
-    st.markdown('<div class="section-label">Corpus at a glance</div>', unsafe_allow_html=True)
-    st.markdown(f"""
-    <div class="stat-row">
-        <span class="stat-label">Transcripts</span>
-        <span class="stat-value stat-accent">5</span>
-    </div>
-    <div class="stat-row">
-        <span class="stat-label">Chunks indexed</span>
-        <span class="stat-value">{total_chunks}</span>
-    </div>
-    <div class="stat-row">
-        <span class="stat-label">Chunk strategy</span>
-        <span class="stat-value">Speaker</span>
-    </div>
-    <div class="stat-row">
-        <span class="stat-label">Embeddings</span>
-        <span class="stat-value">MiniLM-L6</span>
-    </div>
-    <div class="stat-row">
-        <span class="stat-label">Generator</span>
-        <span class="stat-value">Claude Haiku</span>
-    </div>
-    <div class="stat-row">
-        <span class="stat-label">Coverage</span>
-        <span class="stat-value">Q4 2024</span>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # Correspondents on the ground
-    st.markdown("""
-    <div class="correspondent-block">
-        <div class="correspondent-head">Our correspondents</div>
-    """, unsafe_allow_html=True)
-
-    for ticker, ceo in companies.items():
-        st.markdown(f"""
-        <div class="correspondent-row">
-            <span class="correspondent-ticker">{ticker}</span>
-            <span class="correspondent-name">{ceo}</span>
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # Retrieval controls — tucked at the bottom
-    st.markdown("""
-    <div class="retrieval-block">
-    """, unsafe_allow_html=True)
-    st.markdown('<div class="section-label">Retrieval controls</div>', unsafe_allow_html=True)
+# Retrieval controls — horizontal row
+ctrl_col1, ctrl_col2 = st.columns([1, 2])
+with ctrl_col1:
     n_results = st.slider("Top-k chunks", 2, 10, 5)
+with ctrl_col2:
     ticker_filter = st.selectbox("Company filter",
                                   ["All companies","NVDA","AAPL","MSFT","AMZN","META"])
-    ticker = None if ticker_filter == "All companies" else ticker_filter
-    st.markdown("</div>", unsafe_allow_html=True)
+ticker = None if ticker_filter == "All companies" else ticker_filter
 
 # ── TABS ───────────────────────────────────────────────────────────────────────
 tab1, tab2, tab3 = st.tabs(["ASK", "COMPARE", "EXPLORE"])
